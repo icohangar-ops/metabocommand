@@ -148,6 +148,18 @@ After Phase 2b, the app is **feature-complete against the requirements spec** ex
 - **Profile** — read-only account info, password change, notification preferences toggles (persisted to JSONB)
 - **Seed data** — 12 agents, 14 approval items, 22 agent log records, 14 activity records, all matching the requirements spec exactly
 
+## Open-source research leveraged
+
+The Support Reflex workflow has been strengthened with evidence-gated escalation
+lanes inspired by open-source human-in-the-loop support and agent-control
+projects. The app now separates autonomous support actions from
+approval-required and human-handoff lanes, and each lane names the evidence
+package required before it can be queued.
+
+See `docs/OPEN_SOURCE_RESEARCH.md` for attribution to Tiledesk, the
+InterSystems customer-support agent demo, and EpicStaff. No upstream source code
+is vendored.
+
 ## Architecture
 
 ```

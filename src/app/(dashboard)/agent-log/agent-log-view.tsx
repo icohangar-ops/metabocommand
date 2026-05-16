@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -58,6 +58,11 @@ export function AgentLogView({ initialRecords, role, currentUser }: AgentLogView
   const presenceChannelName = `agent-log-${role}`;
   const tableChannelName = `agent-log-table-${role}`;
 
+  const showToast = useCallback((message: string) => {
+    setToast(message);
+    setTimeout(() => setToast(null), 3000);
+  }, []);
+
   // Realtime on agent_action_log
   useEffect(() => {
     const supabase = createClient();
@@ -106,7 +111,7 @@ export function AgentLogView({ initialRecords, role, currentUser }: AgentLogView
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [role, tableChannelName]);
+  }, [role, tableChannelName, showToast]);
 
   // Presence
   useEffect(() => {
@@ -168,11 +173,6 @@ export function AgentLogView({ initialRecords, role, currentUser }: AgentLogView
       if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     };
   }, [myStatus]);
-
-  function showToast(message: string) {
-    setToast(message);
-    setTimeout(() => setToast(null), 3000);
-  }
 
   function onRowExpand(id: string) {
     setExpandedId((prev) => (prev === id ? null : id));
