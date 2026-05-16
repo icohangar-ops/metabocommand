@@ -24,6 +24,22 @@ code is vendored in this repository.
     commerce-specific replay, approvals, and role-scoped decisions rather than
     generic visual agent building.
 
+## AI Governance References
+
+- Georgios Fradelos, PhD, *Verifiable Governance Architecture (VGA) for
+  Organisations and Teams with Human and AI Employees*, Geneva, January 9,
+  2026.
+  - Used for runtime Watchdog, evidence-packet, and seniority-based
+    decision-rights patterns.
+  - MetaboCommand implementation: `src/lib/governance-watchdog.ts`,
+    `supabase/migrations/0004_governance_watchdog.sql`, and the Approval Queue
+    display.
+- Georgios Fradelos, PhD, *Finance-Grade Assurance for Agentic AI*, Geneva,
+  January 11, 2026.
+  - Used for finance-grade evidence/audit framing.
+  - MetaboCommand implementation: evidence packets bind actor, intent,
+    policy flags, approval boundary, and decision trail before execution.
+
 ## Attribution And Reuse Rules
 
 - Preserve upstream license and copyright notices if any code is copied in the

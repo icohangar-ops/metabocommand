@@ -78,8 +78,10 @@ export async function POST(request: Request) {
     description: item.action_description,
     outcome: parsed.data.decision === "approved" ? "Approved" : "Rejected",
     decided_by: `${profile.display_name} (${profile.email})`,
-    reasoning_summary: `Decision recorded by ${profile.display_name}`,
+    reasoning_summary: `Decision recorded by ${profile.display_name}${item.evidence_packet_id ? ` against evidence packet ${item.evidence_packet_id}` : ""}`,
     approval_item_id: item.id,
+    evidence_packet_id: item.evidence_packet_id ?? null,
+    policy_flags: item.policy_flags ?? [],
   });
 
   // Slack confirmation

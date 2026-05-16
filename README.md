@@ -142,6 +142,7 @@ After Phase 2b, the app is **feature-complete against the requirements spec** ex
   - **Advocacy Agent** — review volume trend, referral funnel, high-advocacy segment table
   - **Harmony Agent** — agent conflict feed, Growth/Efficiency operating mode toggle (confirmation modal + Realtime broadcast), system bottleneck feed
 - **Approval Queue** — Realtime subscription + Presence + four activity status badges (Idle / Reviewing / Approving / Rejecting) + 60s idle timeout + Slack webhook notifications + RLS-enforced role scoping
+- **Governance Watchdog** — seniority-based agent permissions, default approval gates for high-impact actions, evidence packets, policy flags, and role-scoped evidence export
 - **Agent Action Log** — Realtime + Presence (Idle / Reviewing log / Filtering logs) + three-filter combination + expandable reasoning rows
 - **Activity History Log** — multi-select filters + date range + paginated load-more + CSV export + role scoping
 - **Settings** — Data Source cards, editable Agent Threshold table, Slack Integration with Test Connection
@@ -160,6 +161,19 @@ See `docs/OPEN_SOURCE_RESEARCH.md` for attribution to Tiledesk, the
 InterSystems customer-support agent demo, and EpicStaff. No upstream source code
 is vendored.
 
+## AI governance patterns leveraged
+
+MetaboCommand formalizes the approval boundary as a **Governance Watchdog**:
+each new approval proposal receives a seniority classification, policy flags,
+and an exportable evidence packet. See `docs/GOVERNANCE_WATCHDOG.md`.
+
+Attribution: runtime enforcement, evidence-packet, and seniority-based
+decision-rights patterns are adapted from Georgios Fradelos, PhD, *Verifiable
+Governance Architecture (VGA) for Organisations and Teams with Human and AI
+Employees*, Geneva, January 9, 2026. Finance-grade assurance direction is
+adapted from Georgios Fradelos, PhD, *Finance-Grade Assurance for Agentic AI*,
+Geneva, January 11, 2026.
+
 ## Architecture
 
 ```
@@ -176,8 +190,10 @@ is vendored.
   Route handlers                                                ▼
   /api/approvals/submit                             Supabase JS (anon key + RLS)
   /api/approvals/decide                             - postgres_changes on approval_items
+  /api/approvals/evidence                           - evidence packet export
   - Zod validation                                  - postgres_changes on agent_action_log
   - Role check                                      - presence channel per page per role
+  - Watchdog evidence packet
   - Insert + Slack webhook
   - Activity log write
       │

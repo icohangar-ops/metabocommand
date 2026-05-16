@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { sendSlackNotification } from "@/lib/slack";
+import { buildEvidencePacket } from "@/lib/governance-watchdog";
 
 const submitSchema = z.object({
   agent_name: z.string().min(1),
@@ -33,6 +34,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Role/queue mismatch" }, { status: 403 });
   }
 
+  const evidencePacket = buildEvidencePacket({
+    agentName: parsed.data.agent_name,
+    queue: parsed.data.queue,
+    actionDescription: parsed.data.action_description,
+    financialImpact: parsed.data.financial_impact,
+    impactAmount: parsed.data.impact_amount ?? null,
+  });
+
   const { data: inserted, error: insertError } = await supabase
     .from("approval_items")
     .insert({
@@ -42,6 +51,11 @@ export async function POST(request: Request) {
       financial_impact: parsed.data.financial_impact,
       impact_amount: parsed.data.impact_amount ?? null,
       status: "pending",
+      agent_seniority: evidencePacket.actor.seniority,
+      watchdog_decision: evidencePacket.watchdog.decision,
+      policy_flags: evidencePacket.watchdog.policyFlags,
+      evidence_packet_id: evidencePacket.id,
+      evidence_packet: evidencePacket,
     })
     .select()
     .single();
@@ -84,8 +98,10 @@ export async function POST(request: Request) {
     description: parsed.data.action_description,
     outcome: "Pending Approval",
     decided_by: "—",
-    reasoning_summary: `Submitted from ${parsed.data.agent_name} view`,
+    reasoning_summary: `Submitted from ${parsed.data.agent_name} view. Watchdog decision: ${evidencePacket.watchdog.decision}; flags: ${evidencePacket.watchdog.policyFlags.join(", ")}; evidence packet: ${evidencePacket.id}.`,
     approval_item_id: inserted.id,
+    evidence_packet_id: evidencePacket.id,
+    policy_flags: evidencePacket.watchdog.policyFlags,
   });
 
   return NextResponse.json({ id: inserted.id });

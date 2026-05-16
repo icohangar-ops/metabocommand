@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PresenceBar } from "./presence-bar";
 import { formatDateTime } from "@/lib/utils";
-import type { ApprovalItem, UserRole } from "@/lib/supabase/types";
+import type { AgentSeniority, ApprovalItem, UserRole, WatchdogDecision } from "@/lib/supabase/types";
 
 type ActivityStatus = "idle" | "reviewing" | "approving" | "rejecting";
 
@@ -32,6 +32,32 @@ interface ApprovalQueueProps {
 }
 
 const IDLE_TIMEOUT_MS = 60_000;
+
+const seniorityLabels: Record<AgentSeniority, string> = {
+  junior: "Junior",
+  professional: "Professional",
+  senior_professional: "Senior Professional",
+};
+
+const watchdogLabels: Record<WatchdogDecision, string> = {
+  pass: "Pass",
+  approval_required: "Approval Required",
+  blocked: "Blocked",
+};
+
+const watchdogClasses: Record<WatchdogDecision, string> = {
+  pass: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  approval_required: "bg-amber-50 text-amber-800 border-amber-200",
+  blocked: "bg-rose-50 text-rose-800 border-rose-200",
+};
+
+function evidenceChecklist(item: ApprovalItem) {
+  const packet = item.evidence_packet as
+    | { evidence_checklist?: Array<{ label: string; status: string }> }
+    | null
+    | undefined;
+  return packet?.evidence_checklist ?? [];
+}
 
 export function ApprovalQueue({ initialItems, role, currentUser }: ApprovalQueueProps) {
   const [items, setItems] = useState<ApprovalItem[]>(initialItems);
@@ -254,6 +280,59 @@ export function ApprovalQueue({ initialItems, role, currentUser }: ApprovalQueue
                     <span>Impact: <span className="font-medium text-slate-700">{item.financial_impact}</span></span>
                     <span>· Submitted {formatDateTime(item.submitted_at)}</span>
                   </div>
+                  {item.watchdog_decision && (
+                    <div className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-3">
+                      <div className="flex flex-wrap items-center gap-2 text-xs">
+                        <span
+                          className={`rounded-full border px-2 py-1 font-semibold ${watchdogClasses[item.watchdog_decision]}`}
+                        >
+                          Watchdog: {watchdogLabels[item.watchdog_decision]}
+                        </span>
+                        {item.agent_seniority && (
+                          <span className="rounded-full border border-slate-200 bg-white px-2 py-1 font-medium text-slate-700">
+                            Seniority: {seniorityLabels[item.agent_seniority]}
+                          </span>
+                        )}
+                        {item.evidence_packet_id && (
+                          <a
+                            href={`/api/approvals/evidence?id=${item.id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="rounded-full border border-slate-200 bg-white px-2 py-1 font-mono text-[11px] text-slate-600 hover:text-slate-900"
+                          >
+                            {item.evidence_packet_id}
+                          </a>
+                        )}
+                      </div>
+                      {item.policy_flags && item.policy_flags.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {item.policy_flags.map((flag) => (
+                            <span
+                              key={flag}
+                              className="rounded bg-white px-2 py-1 text-[11px] font-medium text-slate-500 ring-1 ring-slate-200"
+                            >
+                              {flag.replaceAll("_", " ")}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {evidenceChecklist(item).length > 0 && (
+                        <details className="mt-3 text-xs text-slate-600">
+                          <summary className="cursor-pointer font-medium text-slate-700">
+                            Evidence checklist
+                          </summary>
+                          <ul className="mt-2 space-y-1">
+                            {evidenceChecklist(item).map((check) => (
+                              <li key={`${item.id}-${check.label}`} className="flex items-center justify-between gap-3">
+                                <span>{check.label}</span>
+                                <span className="font-medium text-slate-500">{check.status.replaceAll("_", " ")}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </details>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <Button

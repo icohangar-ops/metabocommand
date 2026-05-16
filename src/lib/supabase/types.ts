@@ -4,6 +4,10 @@ export type ApprovalStatus = "pending" | "approved" | "rejected";
 
 export type ApprovalQueueName = "finance" | "operations";
 
+export type AgentSeniority = "junior" | "professional" | "senior_professional";
+
+export type WatchdogDecision = "pass" | "approval_required" | "blocked";
+
 export type AgentSystem =
   | "capital_reflex"
   | "revenue_velocity"
@@ -29,6 +33,7 @@ export interface Agent {
   is_active: boolean;
   autonomous_limit: number | null;
   approval_required_above: number | null;
+  seniority?: AgentSeniority;
 }
 
 export interface ApprovalItem {
@@ -44,6 +49,11 @@ export interface ApprovalItem {
   decided_at: string | null;
   decided_by: string | null;
   slack_notified: boolean;
+  agent_seniority?: AgentSeniority | null;
+  watchdog_decision?: WatchdogDecision | null;
+  policy_flags?: string[] | null;
+  evidence_packet_id?: string | null;
+  evidence_packet?: Record<string, unknown> | null;
 }
 
 export interface AgentActionLogEntry {
@@ -57,6 +67,8 @@ export interface AgentActionLogEntry {
   decided_by: string;
   reasoning_summary: string;
   approval_item_id: string | null;
+  evidence_packet_id?: string | null;
+  policy_flags?: string[] | null;
 }
 
 export interface ActivityHistoryEntry {
