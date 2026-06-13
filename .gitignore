@@ -56,3 +56,6 @@ AGENTS.md
 # CHP session artifacts (local only)
 .chp_registry.json
 .chp/sessions/
+
+# Rust
+/target/
