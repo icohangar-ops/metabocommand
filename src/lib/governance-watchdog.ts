@@ -1,4 +1,4 @@
-import type { ApprovalQueueName } from "@/lib/supabase/types";
+export type ApprovalQueueName = "finance" | "operations";
 
 export type AgentSeniority = "junior" | "professional" | "senior_professional";
 export type WatchdogDecision = "pass" | "approval_required" | "blocked";
