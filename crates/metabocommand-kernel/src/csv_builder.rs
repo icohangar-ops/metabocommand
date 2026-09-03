@@ -83,10 +83,8 @@ impl CsvBuilder {
 
 /// Escape a single CSV field per RFC-4180.
 fn escape_field(field: &str) -> String {
-    let needs_quoting = field.contains(',')
-        || field.contains('"')
-        || field.contains('\n')
-        || field.contains('\r');
+    let needs_quoting =
+        field.contains(',') || field.contains('"') || field.contains('\n') || field.contains('\r');
 
     if needs_quoting {
         let escaped = field.replace('"', "\"\"");

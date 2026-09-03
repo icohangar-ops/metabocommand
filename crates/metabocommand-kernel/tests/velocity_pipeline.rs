@@ -67,7 +67,10 @@ fn speed_norm_halves_at_sixty_seconds() {
 fn score_actions_per_hour_is_clamped_high() {
     // Absurdly large throughput must clamp at norm=1.0, not blow past it.
     let s = calculate_velocity_score(1.0e9, 1.0, 0.0);
-    assert!((s - 1.0).abs() < EPS, "huge aph should clamp to 1.0, got {s}");
+    assert!(
+        (s - 1.0).abs() < EPS,
+        "huge aph should clamp to 1.0, got {s}"
+    );
     // Anything finite must stay <= 1.0 — guards against an unclamped weight bug.
     assert!(s <= 1.0 + EPS);
 }
@@ -87,7 +90,10 @@ fn score_success_rate_above_one_is_clamped() {
     // A success_rate of 5.0 (bad upstream data) must not inflate the score.
     // 100 aph -> 0.40 ; success clamps to 1.0 -> 0.30 ; art 0 -> 0.30 = 1.0
     let s = calculate_velocity_score(100.0, 5.0, 0.0);
-    assert!((s - 1.0).abs() < EPS, "over-unity success must clamp, got {s}");
+    assert!(
+        (s - 1.0).abs() < EPS,
+        "over-unity success must clamp, got {s}"
+    );
 }
 
 #[test]
@@ -146,9 +152,18 @@ fn auto_execute_requires_both_high_score_and_low_risk() {
     assert!(should_auto_execute(70.0, 0.0));
     assert!(should_auto_execute(70.0, 0.299));
     // score boundary is inclusive (>=70), risk boundary is exclusive (<0.3)
-    assert!(!should_auto_execute(69.999, 0.0), "score below 70 must block");
-    assert!(!should_auto_execute(70.0, 0.3), "risk exactly at cap must block");
-    assert!(!should_auto_execute(100.0, 0.30001), "risk over cap must block");
+    assert!(
+        !should_auto_execute(69.999, 0.0),
+        "score below 70 must block"
+    );
+    assert!(
+        !should_auto_execute(70.0, 0.3),
+        "risk exactly at cap must block"
+    );
+    assert!(
+        !should_auto_execute(100.0, 0.30001),
+        "risk over cap must block"
+    );
 }
 
 #[test]
@@ -166,8 +181,18 @@ fn auto_execute_never_fires_on_negative_or_nan_safe_inputs() {
 
 #[test]
 fn breach_false_when_current_at_or_below_threshold() {
-    assert!(!compute_threshold_breach(50.0, 50.0, 3, &[99.0, 99.0, 99.0]));
-    assert!(!compute_threshold_breach(49.0, 50.0, 3, &[99.0, 99.0, 99.0]));
+    assert!(!compute_threshold_breach(
+        50.0,
+        50.0,
+        3,
+        &[99.0, 99.0, 99.0]
+    ));
+    assert!(!compute_threshold_breach(
+        49.0,
+        50.0,
+        3,
+        &[99.0, 99.0, 99.0]
+    ));
 }
 
 #[test]
@@ -269,7 +294,10 @@ fn scaled_bridge_produces_intended_tiers() {
     let mid = velocity_score_scaled(50.0, 0.8, 30.0);
     assert!((mid - 64.0).abs() < EPS, "got {mid}");
     assert_eq!(classify_velocity(mid), VelocityTier::Hot);
-    assert!(!should_auto_execute(mid, 0.2), "64 < 70 must not auto-execute");
+    assert!(
+        !should_auto_execute(mid, 0.2),
+        "64 < 70 must not auto-execute"
+    );
 
     // Strong signal at exactly the 70 auto-execute boundary.
     // Need score == 70: aph 100 (0.40), success 1.0 (0.30) -> 0.70 -> 70.0
@@ -307,8 +335,14 @@ fn classify_escalation_precedence_evidence_over_guardrail() {
 #[test]
 fn escalation_priority_evidence_bonus_caps_at_three() {
     // HumanHandoff base 3 + min(evidence,3).
-    assert_eq!(escalation_priority(&lane("A", EscalationMode::HumanHandoff, 0, "x")), 3);
-    assert_eq!(escalation_priority(&lane("A", EscalationMode::HumanHandoff, 3, "x")), 6);
+    assert_eq!(
+        escalation_priority(&lane("A", EscalationMode::HumanHandoff, 0, "x")),
+        3
+    );
+    assert_eq!(
+        escalation_priority(&lane("A", EscalationMode::HumanHandoff, 3, "x")),
+        6
+    );
     assert_eq!(
         escalation_priority(&lane("A", EscalationMode::HumanHandoff, 100, "x")),
         6,
@@ -319,8 +353,8 @@ fn escalation_priority_evidence_bonus_caps_at_three() {
 #[test]
 fn lanes_sorted_highest_priority_first() {
     let lanes = vec![
-        lane("auto", EscalationMode::Autonomous, 0, "x"),       // 1
-        lane("handoff", EscalationMode::HumanHandoff, 2, "x"),  // 3+2=5
+        lane("auto", EscalationMode::Autonomous, 0, "x"), // 1
+        lane("handoff", EscalationMode::HumanHandoff, 2, "x"), // 3+2=5
         lane("approve", EscalationMode::ApprovalRequired, 1, "x"), // 2+1=3
     ];
     let sorted = lanes_by_priority(&lanes);

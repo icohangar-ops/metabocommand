@@ -1,15 +1,17 @@
 //! # metabocommand-kernel
 //!
-//! Pure computation kernels for metabolic commerce platform.
-//! Handles escalation management, velocity scoring, and CSV generation.
+//! Pure computation kernels for the MetaboCommand platform.
+//! Handles escalation management, velocity scoring, CSV generation, and governance.
 //! Designed for WASM target — no I/O, no async, pure functions only.
 
-pub mod types;
-pub mod escalation;
-pub mod velocity;
 pub mod csv_builder;
+pub mod escalation;
+pub mod governance;
+pub mod types;
+pub mod velocity;
 
-pub use types::*;
-pub use escalation::*;
-pub use velocity::*;
 pub use csv_builder::CsvBuilder;
+pub use escalation::*;
+pub use governance::*;
+pub use types::*;
+pub use velocity::*;

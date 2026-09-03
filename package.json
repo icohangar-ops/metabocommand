@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "mcp": "node --experimental-strip-types --import ./tests/register-ts.mjs scripts/mcp-server.ts",
+    "test:governance": "node --test --experimental-strip-types --import ./tests/register-ts.mjs tests/governance.test.ts",
     "test:stigmergy": "node --test --experimental-strip-types --import ./tests/register-ts.mjs tests/stigmergy.test.ts"
   },
   "dependencies": {

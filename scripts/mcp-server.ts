@@ -148,30 +148,6 @@ function toolEntry(tool: ToolSpec) {
   return { name: tool.name, description: tool.description, inputSchema: tool.inputSchema };
 }
 
-async function missionBoard() {
-  const [departments, agents, approvals, workflows, actions, evidencePackets, alerts, skills] = await Promise.all([
-    supabase.from("departments").select("*").order("created_at", { ascending: false }).limit(50),
-    supabase.from("agents").select("*").order("name", { ascending: true }).limit(100),
-    supabase.from("approval_items").select("*").eq("status", "pending").order("created_at", { ascending: false }).limit(50),
-    supabase.from("workflows").select("*").order("created_at", { ascending: false }).limit(50),
-    supabase.from("external_actions").select("*").order("created_at", { ascending: false }).limit(50),
-    supabase.from("evidence_packets").select("*").order("created_at", { ascending: false }).limit(50),
-    supabase.from("security_events").select("*").order("created_at", { ascending: false }).limit(50),
-    supabase.from("skills").select("*").order("name", { ascending: true }).limit(100),
-  ]);
-
-  return {
-    departments: departments.data ?? [],
-    agents: agents.data ?? [],
-    approval_inbox: approvals.data ?? [],
-    task_queue: workflows.data ?? [],
-    external_actions: actions.data ?? [],
-    evidence_packets: evidencePackets.data ?? [],
-    alert_feed: alerts.data ?? [],
-    skill_registry: skills.data ?? [],
-  };
-}
-
 async function submitApproval(args: Record<string, unknown>) {
   const agentName = requiredString(args.agent_name, "agent_name");
   const queue = requiredQueue(args.queue);

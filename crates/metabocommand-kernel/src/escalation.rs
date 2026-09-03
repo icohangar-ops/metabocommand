@@ -74,7 +74,8 @@ pub fn lanes_by_priority(lanes: &[EscalationLane]) -> Vec<&EscalationLane> {
 
 /// Count lanes that would be reclassified by the rules engine.
 pub fn count_reclassifications(lanes: &[EscalationLane]) -> u32 {
-    lanes.iter()
+    lanes
+        .iter()
         .filter(|lane| classify_escalation(lane) != lane.mode)
         .count() as u32
 }
@@ -97,14 +98,10 @@ mod tests {
     use super::*;
 
     fn sample_lane(id: &str, mode: EscalationMode, evidence_count: usize) -> EscalationLane {
-        let mut lane = EscalationLane::new(
-            id,
-            "test",
-            mode,
-            "generic",
-            "owner",
-        );
-        lane.evidence = (0..evidence_count).map(|i| format!("evidence_{}", i)).collect();
+        let mut lane = EscalationLane::new(id, "test", mode, "generic", "owner");
+        lane.evidence = (0..evidence_count)
+            .map(|i| format!("evidence_{}", i))
+            .collect();
         lane
     }
 
@@ -138,7 +135,11 @@ mod tests {
     #[test]
     fn test_classify_known_guardrail() {
         let lane = EscalationLane::new(
-            "A", "test", EscalationMode::HumanHandoff, "revenue_threshold", "owner"
+            "A",
+            "test",
+            EscalationMode::HumanHandoff,
+            "revenue_threshold",
+            "owner",
         );
         assert_eq!(classify_escalation(&lane), EscalationMode::ApprovalRequired);
     }
@@ -146,7 +147,11 @@ mod tests {
     #[test]
     fn test_classify_human_handoff() {
         let lane = EscalationLane::new(
-            "A", "test", EscalationMode::HumanHandoff, "unknown_guardrail", "owner"
+            "A",
+            "test",
+            EscalationMode::HumanHandoff,
+            "unknown_guardrail",
+            "owner",
         );
         assert_eq!(classify_escalation(&lane), EscalationMode::HumanHandoff);
     }
@@ -198,7 +203,13 @@ mod tests {
     fn test_count_reclassifications() {
         let lanes = vec![
             sample_lane("A", EscalationMode::Autonomous, 4), // Already Autonomous
-            EscalationLane::new("B", "test", EscalationMode::HumanHandoff, "revenue_threshold", "owner"), // Would be ApprovalRequired
+            EscalationLane::new(
+                "B",
+                "test",
+                EscalationMode::HumanHandoff,
+                "revenue_threshold",
+                "owner",
+            ), // Would be ApprovalRequired
         ];
         assert_eq!(count_reclassifications(&lanes), 1);
     }

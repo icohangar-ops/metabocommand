@@ -107,7 +107,10 @@ mod tests {
     #[test]
     fn test_escalation_mode_display() {
         assert_eq!(EscalationMode::Autonomous.to_string(), "Autonomous");
-        assert_eq!(EscalationMode::ApprovalRequired.to_string(), "ApprovalRequired");
+        assert_eq!(
+            EscalationMode::ApprovalRequired.to_string(),
+            "ApprovalRequired"
+        );
         assert_eq!(EscalationMode::HumanHandoff.to_string(), "HumanHandoff");
     }
 
@@ -119,7 +122,8 @@ mod tests {
 
     #[test]
     fn test_escalation_lane_new() {
-        let lane = EscalationLane::new("L1", "pricing", EscalationMode::Autonomous, "<$1000", "bot");
+        let lane =
+            EscalationLane::new("L1", "pricing", EscalationMode::Autonomous, "<$1000", "bot");
         assert_eq!(lane.id, "L1");
         assert!(lane.evidence.is_empty());
     }
