@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated napi-rs binding artifacts (see `npm run build:napi`).
+    "native/**",
   ]),
 ]);
 

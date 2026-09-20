@@ -209,6 +209,63 @@ Geneva, January 11, 2026.
   - slack_settings
 ```
 
+## Rust governance kernel (napi binding)
+
+The governance rules — agent seniority profiles, watchdog policy flags,
+approval decisions, and evidence-packet generation — live in a single place:
+the Rust workspace in `crates/metabocommand-kernel`. The TypeScript layer
+(`src/lib/governance-watchdog.ts`) is a thin wrapper over kernel results and
+contains no independent rule logic.
+
+The Next.js server calls the kernel in-process through an
+[napi-rs](https://napi.rs) native binding (`crates/metabocommand-napi`),
+which exposes the kernel's JSON `GovernanceRequest` / `GovernanceResponse`
+contract as a N-API function. See
+[docs/adr/0001-governance-kernel-napi-binding.md](docs/adr/0001-governance-kernel-napi-binding.md)
+for why napi-rs over wasm-pack or a subprocess bridge.
+
+### Build the binding locally
+
+Prerequisite: a Rust toolchain (rustup, stable). Then:
+
+```bash
+# 1. Compile the kernel + binding crate in release mode.
+#    Output lands in native/ (gitignored):
+npm run build:napi
+#    → native/metabocommand.<platform-triple>.node
+#      e.g. native/metabocommand.linux-x64-gnu.node
+
+# 2. Run the kernel test suite:
+cargo test
+```
+
+### Where the artifact must live
+
+The loader (`src/lib/rust-governance.ts`) resolves the binding at runtime,
+in this order:
+
+1. `METABOCOMMAND_NATIVE_PATH` — explicit path to a `.node` file (escape
+   hatch for non-standard deployments).
+2. `<repo root>/native/metabocommand.<platform-triple>.node` — what
+   `npm run build:napi` produces.
+3. `<repo root>/native/index.node` — generic build output.
+
+The repo root is the server process working directory (`next dev` /
+`next start` run from the checkout); override it with `METABOCOMMAND_ROOT`
+if you start the server from elsewhere. `next.config.ts` includes
+`native/**` in `outputFileTracingIncludes` so standalone / Vercel output
+keeps the artifact.
+
+If no artifact is found, governance falls back to shelling out to the
+kernel CLI (`target/release/metabocommand-governance` → `target/debug` →
+`cargo run`) and logs a warning — convenient for a fresh clone, but build
+the binding for anything real: the fallback needs a Rust toolchain at
+runtime and spawns a process per call.
+
+Both transports speak the identical wire format, pinned by
+`npm run test:governance` (Node 22+ required for the test scripts, which
+use type stripping).
+
 ## Stigmergic Coordination
 
 MetaboCommand coordinates ~12 agents (Pulse, Oracle, Sniper, Conductor,
@@ -300,6 +357,7 @@ decay.
 | UI primitives | Radix UI + small local components | Accessible dropdowns, switches, checkboxes |
 | Charts | Recharts | Covers every chart type in spec (line, area, scatter, bar, radial, heatmap table) |
 | Validation | Zod | API payload validation |
+| Governance kernel | Rust crate (`crates/metabocommand-kernel`) via napi-rs binding | Watchdog rules live once, in Rust, called in-process from the Node server (see [Rust governance kernel](#rust-governance-kernel-napi-binding)) |
 | Icons | Lucide React | Consistent icon set |
 
 ## Project structure
@@ -346,9 +404,15 @@ metabocommand/
 │   │   ├── supabase/                 # client / server / middleware / types
 │   │   ├── slack.ts                  # webhook payload builder
 │   │   ├── csv.ts                    # RFC-4180 CSV export
+│   │   ├── governance-watchdog.ts    # TS wrapper over the Rust kernel results
+│   │   ├── rust-governance.ts        # napi binding loader + dev subprocess fallback
 │   │   ├── dummy-data.ts             # deterministic seeded chart data
 │   │   └── utils.ts                  # cn, formatters, avatar helpers
 │   └── middleware.ts                 # session refresh + auth redirect
+├── crates/
+│   ├── metabocommand-kernel/         # Rust governance / velocity / escalation / CSV kernels
+│   └── metabocommand-napi/           # napi-rs binding → native/*.node for the Node server
+├── native/                           # built napi artifact (npm run build:napi, gitignored)
 ├── supabase/migrations/
 │   ├── 0001_schema.sql               # tables, types, RLS, realtime
 │   └── 0002_seed.sql                 # all seed records

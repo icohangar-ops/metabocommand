@@ -59,3 +59,6 @@ AGENTS.md
 
 # Rust
 /target/
+
+# napi-rs build output (built via `npm run build:napi`)
+/native/

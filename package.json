@@ -2,10 +2,14 @@
   "name": "metabocommand",
   "version": "0.1.0",
   "private": true,
+  "napi": {
+    "name": "metabocommand"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "build:napi": "napi build --release --platform --cargo-cwd crates/metabocommand-napi native",
     "lint": "eslint",
     "mcp": "node --experimental-strip-types --import ./tests/register-ts.mjs scripts/mcp-server.ts",
     "test:governance": "node --test --experimental-strip-types --import ./tests/register-ts.mjs tests/governance.test.ts",
@@ -35,6 +39,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@napi-rs/cli": "^2.18.4",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

@@ -1,0 +1,19 @@
+[package]
+name = "metabocommand-napi"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Node.js N-API binding (napi-rs) for the metabocommand-kernel governance engine"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi = { version = "2", default-features = false, features = ["napi4"] }
+napi-derive = "2"
+serde_json = { workspace = true }
+metabocommand-kernel = { path = "../metabocommand-kernel" }
+
+[build-dependencies]
+napi-build = "2"

@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/metabocommand-kernel"]
+members = ["crates/metabocommand-kernel", "crates/metabocommand-napi"]
 
 [workspace.package]
 version = "0.1.0"
